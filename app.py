@@ -129,11 +129,12 @@ def settings_page():
                 new_site_name = st.text_input("اسم الموقع (Site Name)")
                 new_engineer = st.text_input("اسم المهندس المسؤول (Engineer Name)")
                 new_phone = st.text_input("رقم هاتف المهندس (Phone Number)")
+                new_delivery = st.text_input("نقطة التوصيل (Delivery Point)")
                 submit_button = st.form_submit_button("➕ حفظ الموقع")
                 
                 if submit_button:
                     if new_site_name and new_engineer and new_phone:
-                        add_site(new_site_name, new_engineer, new_phone)
+                        add_site(new_site_name, new_engineer, new_phone, new_delivery)
                         st.success("تم إضافة الموقع بنجاح!")
                         st.rerun()
                     else:
@@ -142,7 +143,7 @@ def settings_page():
             st.write("### المواقع المسجلة")
             sites = get_sites()
             if sites:
-                df_sites = pd.DataFrame(sites, columns=["ID", "Site Name", "Engineer", "Phone"])
+                df_sites = pd.DataFrame(sites, columns=["ID", "Site Name", "Engineer", "Phone", "Delivery Point"])
                 st.dataframe(df_sites.set_index("ID"), use_container_width=True)
                 
                 # Delete site option with a refined UI
@@ -163,22 +164,30 @@ def main_dashboard():
     col1, col2 = st.columns([1, 1])
     
     sites = get_sites()
-    site_options = {s[1]: {"engineer": s[2], "phone": s[3]} for s in sites}
+    site_options = {s[1]: {"engineer": s[2], "phone": s[3], "delivery_point": s[4]} for s in sites}
     
     with col1:
         lpo_number = st.text_input("رقم الـ LPO (LPO Number)")
-        supplier_name = st.text_input("اسم المورد (Supplier Name)")
+        
+        # Supplier Name with automatic extraction support
+        if 'extracted_supplier' not in st.session_state:
+            st.session_state.extracted_supplier = ""
+            
+        supplier_name = st.text_input("اسم المورد (Supplier Name)", key="extracted_supplier")
         selected_site_name = st.selectbox("اختار موقع العمل (Site)", options=[""] + list(site_options.keys()))
         
         contact_person = ""
         contact_phone = ""
+        delivery_point = ""
         
         if selected_site_name:
             contact_person = site_options[selected_site_name]["engineer"]
             contact_phone = site_options[selected_site_name]["phone"]
+            delivery_point = site_options[selected_site_name].get("delivery_point", "")
             
         st.text_input("المهندس المسؤول (Contact Person)", value=contact_person, disabled=True)
         st.text_input("رقم الهاتف (Phone)", value=contact_phone, disabled=True)
+        st.text_input("نقطة التوصيل (Delivery Point)", value=delivery_point, disabled=True)
 
     with col2:
         st.subheader("📤 رفع ملف المنتجات")
@@ -186,9 +195,14 @@ def main_dashboard():
         
     if uploaded_file:
         if uploaded_file.name.endswith('.pdf'):
-            df = extract_from_pdf(uploaded_file)
+            df, ext_supplier = extract_from_pdf(uploaded_file)
         else:
-            df = extract_from_excel(uploaded_file)
+            df, ext_supplier = extract_from_excel(uploaded_file)
+            
+        # Update supplier name if extracted and different from current
+        if ext_supplier and ext_supplier != st.session_state.extracted_supplier:
+            st.session_state.extracted_supplier = ext_supplier
+            st.rerun()
             
         if isinstance(df, pd.DataFrame):
             st.write("### معاينة البيانات المستخرجة (Preview)")
@@ -229,6 +243,7 @@ def main_dashboard():
                         "site_name": selected_site_name,
                         "engineer": contact_person,
                         "phone": contact_phone,
+                        "delivery_point": delivery_point,
                         "net_amount": net_amount,
                         "vat": vat_amount,
                         "total_amount": total_amount

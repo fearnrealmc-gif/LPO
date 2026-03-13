@@ -113,7 +113,7 @@ def generate_lpo_pdf(lpo_data, items_df, output_path, assets):
     # Right: Management, Stamp/Signature
     
     footer_left = [
-        [Paragraph("<b>Delivery Point :</b>", bold_left)],
+        [Paragraph(f"<b>Delivery Point :</b> {lpo_data.get('delivery_point', 'As per Project')}", bold_left)],
         [Paragraph("Payment Terms to be agreed", normal_left)],
         [Paragraph(f"<b>Contact Person :</b> {lpo_data['engineer']} ({lpo_data['phone']})", normal_left)]
     ]

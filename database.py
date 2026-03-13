@@ -13,17 +13,24 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             engineer TEXT NOT NULL,
-            phone TEXT NOT NULL
+            phone TEXT NOT NULL,
+            delivery_point TEXT
         )
     ''')
+    
+    # Migration: add delivery_point if it doesn't exist
+    try:
+        cursor.execute("ALTER TABLE sites ADD COLUMN delivery_point TEXT")
+    except sqlite3.OperationalError:
+        pass # Column already exists
     
     conn.commit()
     conn.close()
 
-def add_site(name, engineer, phone):
+def add_site(name, engineer, phone, delivery_point):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('INSERT INTO sites (name, engineer, phone) VALUES (?, ?, ?)', (name, engineer, phone))
+    cursor.execute('INSERT INTO sites (name, engineer, phone, delivery_point) VALUES (?, ?, ?, ?)', (name, engineer, phone, delivery_point))
     conn.commit()
     conn.close()
 
@@ -35,10 +42,10 @@ def get_sites():
     conn.close()
     return rows
 
-def update_site(site_id, name, engineer, phone):
+def update_site(site_id, name, engineer, phone, delivery_point):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
-    cursor.execute('UPDATE sites SET name=?, engineer=?, phone=? WHERE id=?', (name, engineer, phone, site_id))
+    cursor.execute('UPDATE sites SET name=?, engineer=?, phone=?, delivery_point=? WHERE id=?', (name, engineer, phone, delivery_point, site_id))
     conn.commit()
     conn.close()
 
