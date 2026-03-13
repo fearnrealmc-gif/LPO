@@ -77,6 +77,8 @@ def apply_custom_css():
     """, unsafe_allow_html=True)
 
 def save_uploaded_file(uploaded_file, save_path):
+    # Ensure the directory exists
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
     with open(save_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
     st.success(f"Saved {uploaded_file.name} successfully!")
