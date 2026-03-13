@@ -274,8 +274,7 @@ def main_dashboard():
 def main():
     apply_custom_css()
     # Initialize DB
-    if not os.path.exists("lpo_app.db"):
-        init_db()
+    init_db()
     
     # Sidebar
     st.sidebar.title("LPO System")
