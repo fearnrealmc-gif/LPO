@@ -1,0 +1,16 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# App Specific
+lpo_app.db
+assets/*.png
+assets/*.jpg
+assets/*.jpeg
+
+# Local files
+LPO_*.pdf
+LPO_*.xlsx
