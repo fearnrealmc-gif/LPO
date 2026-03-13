@@ -174,20 +174,29 @@ def main_dashboard():
             st.session_state.extracted_supplier = ""
             
         supplier_name = st.text_input("اسم المورد (Supplier Name)", key="extracted_supplier")
+
+        if 'current_delivery_point' not in st.session_state:
+            st.session_state.current_delivery_point = ""
+            
         selected_site_name = st.selectbox("اختار موقع العمل (Site)", options=[""] + list(site_options.keys()))
         
         contact_person = ""
         contact_phone = ""
-        delivery_point = ""
         
         if selected_site_name:
             contact_person = site_options[selected_site_name]["engineer"]
             contact_phone = site_options[selected_site_name]["phone"]
-            delivery_point = site_options[selected_site_name].get("delivery_point", "")
+            site_dp = site_options[selected_site_name].get("delivery_point", "")
+            
+            # Update delivery point if site changed
+            if 'prev_site' not in st.session_state or st.session_state.prev_site != selected_site_name:
+                st.session_state.current_delivery_point = site_dp
+                st.session_state.prev_site = selected_site_name
+                st.rerun()
             
         st.text_input("المهندس المسؤول (Contact Person)", value=contact_person, disabled=True)
         st.text_input("رقم الهاتف (Phone)", value=contact_phone, disabled=True)
-        st.text_input("نقطة التوصيل (Delivery Point)", value=delivery_point, disabled=True)
+        delivery_point = st.text_input("نقطة التوصيل (Delivery Point)", key="current_delivery_point")
 
     with col2:
         st.subheader("📤 رفع ملف المنتجات")
